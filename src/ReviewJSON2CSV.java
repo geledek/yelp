@@ -17,13 +17,19 @@ public class ReviewJSON2CSV {
 		try	{
 			InputStream fis = new FileInputStream(path.toString());
 			InputStreamReader isr = new InputStreamReader(fis, Charset.forName("UTF-8"));
-			
-			String distPath = "datasets/yelp_academic_dataset_review.csv";
-            if(new File(distPath).exists()){
+
+            File distPath = new File("datasets/");
+            File distFile = new File(distPath.toString() + "yelp_academic_dataset_review.csv");
+
+
+            if(distFile.exists()){
                 return;
             }
-            
-			PrintWriter pw = new PrintWriter (distPath, "UTF-8");
+
+            if(!distPath.exists()){
+                distPath.mkdir();
+            }
+			PrintWriter pw = new PrintWriter (distPath.toString() + distFile.toString(), "UTF-8");
 			BufferedReader br = new BufferedReader(isr);
 
             System.out.println("JSON to CSV format conversion in progress...");
