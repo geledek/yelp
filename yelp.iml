@@ -12,5 +12,7 @@
     <orderEntry type="sourceFolder" forTests="false" />
     <orderEntry type="library" name="lib" level="project" />
     <orderEntry type="library" name="json-20141113" level="project" />
+    <orderEntry type="library" name="morfologik-stemming-1.10.0" level="project" />
+    <orderEntry type="library" name="lucene-analyzers-morfologik-5.0.0" level="project" />
   </component>
 </module>
