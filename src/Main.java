@@ -15,7 +15,7 @@ public class Main {
     /**
      * @param args the command line arguments
      */
-    public static void main(String[] args) throws org.apache.lucene.queryparser.classic.ParseException, ParseException, IOException{
+    public static void main(String[] args) throws org.apache.lucene.queryparser.classic.ParseException, ParseException, IOException {
 
         String dir = args[0];
         String indexPath = "index-directory";
@@ -25,31 +25,9 @@ public class Main {
         BusinessJSON2CSV.convert(businessJSON.toPath());
         ReviewJSON2CSV.convert(reviewJSON.toPath());
 
-//
-//        Indexer indexer = new Indexer(indexPath);
-//        indexer.rebuildIndexes();
+        Indexer indexer = new Indexer(indexPath);
+        indexer.rebuildIndexes();
 
-//            while(true) {
-        //SearchEngine se = new SearchEngine(indexPath);
-//        TopDocs topDocs = se.performSearch("\"chinese food\"", 10);
-//
-//        System.out.println("Results found: " + topDocs.totalHits);
-//
-//        ScoreDoc[] hits = topDocs.scoreDocs;
-//
-//        for (ScoreDoc hit : hits) {
-//            Document doc = se.getDocument(hit.doc);
-//            System.out.println("DocID: " + hit.doc
-//                    + "\t[[" + doc.get("businessName") + "]]"
-//                    + "\t Stars:" + doc.get("businessStars")
-//                    + "\t(" + doc.get("longitude") + ", "
-//                    + "\t" + doc.get("latitude")
-//                    + ")\t" + doc.get("review")
-//                    + " \tscore: " + hit.score);
-//        }
-//            }
-
+        SearchEngine se = new SearchEngine(indexPath);
     }
-
-
 }
