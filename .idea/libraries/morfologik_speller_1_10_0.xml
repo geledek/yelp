@@ -1,9 +1,0 @@
-<component name="libraryTable">
-  <library name="morfologik-speller-1.10.0">
-    <CLASSES>
-      <root url="jar://$PROJECT_DIR$/lib/morfologik-speller-1.10.0.jar!/" />
-    </CLASSES>
-    <JAVADOC />
-    <SOURCES />
-  </library>
-</component>

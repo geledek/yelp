@@ -18,7 +18,6 @@
     <orderEntry type="library" name="lucene-queryparser-5.0.0" level="project" />
     <orderEntry type="library" name="morfologik-stemming-1.10.0" level="project" />
     <orderEntry type="library" name="morfologik-fsa-1.10.0" level="project" />
-    <orderEntry type="library" name="morfologik-speller-1.10.0" level="project" />
     <orderEntry type="library" name="morfologik-polish-1.10.0" level="project" />
   </component>
 </module>
