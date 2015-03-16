@@ -8,8 +8,6 @@
 *.war
 *.ear
 
-# Conversion output #
-*.csv
 *.json
 
 # IntelliJ IDEA #

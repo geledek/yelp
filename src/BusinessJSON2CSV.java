@@ -18,8 +18,8 @@ public class BusinessJSON2CSV {
 			InputStream fis = new FileInputStream(path.toString());
 			InputStreamReader isr = new InputStreamReader(fis, Charset.forName("UTF-8"));
 
-			File distPath = new File("datasets/");
-            File distFile = new File(distPath.toString() + "yelp_academic_dataset_business.csv");
+			File distPath = new File("datasets");
+            File distFile = new File(distPath.toString() + "/yelp_academic_dataset_business.csv");
 
 
             if(distFile.exists()){
@@ -30,7 +30,7 @@ public class BusinessJSON2CSV {
                 distPath.mkdir();
             }
 
-			PrintWriter pw = new PrintWriter (distPath.toString() + distFile.toString(), "UTF-8");
+			PrintWriter pw = new PrintWriter (distFile.toString(), "UTF-8");
 			BufferedReader br = new BufferedReader(isr);
 
             System.out.println("JSON to CSV format conversion in progress...");
