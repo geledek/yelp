@@ -1,5 +1,7 @@
 import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.analysis.standard.StandardAnalyzer;
+import org.tartarus.snowball.SnowballProgram;
+import org.tartarus.snowball.ext.EnglishStemmer;
 import org.apache.lucene.document.*;
 import org.apache.lucene.index.IndexWriter;
 import org.apache.lucene.index.IndexWriterConfig;
@@ -32,11 +34,9 @@ public class Indexer {
 	        if (indexWriter == null) {
 	            Directory indexDir = FSDirectory.open(new File(indexPath).toPath());
 
-                System.out.println("MorfologikAnalyzer:");
                 //Analyzer analyzer = new SimpleAnalyzer();
                 //Analyzer analyzer = new StopAnalyzer();
-                //Analyzer analyzer = new StandardAnalyzer();
-                Analyzer analyzer = new MorfologikAnalyzer();
+                Analyzer analyzer = new StandardAnalyzer();
 	            IndexWriterConfig config = new IndexWriterConfig(analyzer);
 
                 if(create){
@@ -102,6 +102,8 @@ public class Indexer {
         String[] fields;
         String[] moreFields;
 
+        EnglishStemmer enstemmer = new EnglishStemmer();
+
         while ((line = br.readLine()) != null) {
             fields = line.split("\t");
             String additional;
@@ -116,6 +118,20 @@ public class Indexer {
             String user_id = fields[1] != null? fields[1]: null;
             String stars = fields[2] != null? fields[2]: null;
             String text = fields[3] != null? fields[3]: null;
+
+            String[] words;
+            words = fields[3].split(" ");
+            for (int i = 0; i < words.length; i++) {
+                enstemmer.setCurrent(words[i]);
+                enstemmer.stem();
+                words[i] = enstemmer.getCurrent();
+            }
+            fields[3] = null;
+            for (int j = 0; j < words.length; j++){
+                fields[3] = fields[3] + " " + words[j];
+            }
+
+
             String date = fields[4] != null? fields[4]: null;
             String voteFunny = fields[5] != null? fields[5]: null;
             String voteUseful = fields[6] != null? fields[6]: null;

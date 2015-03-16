@@ -101,12 +101,12 @@ public class SearchEngine {
         int i = 0;
         for (ScoreDoc hit : hits) {
             Document doc =getDocument(hit.doc);
-            System.out.println("Rank: " + (++i) + "|\tscore: " + hit.score + "|\tDocID: " + hit.doc
-                    + "|\t[[" + doc.get("businessName") + "]]"
-                    + "|\tStars: " + doc.get("businessStars")
+            System.out.println("Rank: " + (++i) + "\t|score: " + hit.score + "\t|DocID: " + hit.doc
+                    + "\t[[" + doc.get("businessName") + "]]"
+                    + "\t|Stars: " + doc.get("businessStars")
                     + "\t(" + doc.get("longitude") + ", "
                     + "\t" + doc.get("latitude")
-                    + ")\tReview: " + doc.get("review"));
+                    + ")\t|Review: " + doc.get("review"));
         }
     }
 

@@ -17,5 +17,9 @@
     <orderEntry type="library" name="json-20141113" level="project" />
     <orderEntry type="library" name="morfologik-fsa-1.10.0" level="project" />
     <orderEntry type="library" name="morfologik-polish-1.10.0" level="project" />
+    <orderEntry type="library" name="lucene-analyzers-common-5.0.0 (2)" level="project" />
+    <orderEntry type="library" name="lucene-core-5.0.0 (2)" level="project" />
+    <orderEntry type="library" name="lucene-demo-5.0.0 (2)" level="project" />
+    <orderEntry type="library" name="lucene-queryparser-5.0.0 (2)" level="project" />
   </component>
 </module>
