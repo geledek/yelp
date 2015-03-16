@@ -1,8 +1,3 @@
-import com.sun.xml.internal.bind.v2.TODO;
-import org.apache.lucene.document.Document;
-import org.apache.lucene.search.ScoreDoc;
-import org.apache.lucene.search.TopDocs;
-
 import java.io.File;
 import java.io.IOException;
 import java.text.ParseException;
