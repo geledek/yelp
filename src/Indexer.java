@@ -1,5 +1,5 @@
 import org.apache.lucene.analysis.Analyzer;
-import org.apache.lucene.analysis.morfologik.MorfologikAnalyzer;
+import org.apache.lucene.analysis.standard.StandardAnalyzer;
 import org.apache.lucene.document.*;
 import org.apache.lucene.index.IndexWriter;
 import org.apache.lucene.index.IndexWriterConfig;
@@ -32,11 +32,11 @@ public class Indexer {
 	        if (indexWriter == null) {
 	            Directory indexDir = FSDirectory.open(new File(indexPath).toPath());
 
-                System.out.println("MorfologikAnalyzer:");
+//                System.out.println("MorfologikAnalyzer:");
                 //Analyzer analyzer = new SimpleAnalyzer();
                 //Analyzer analyzer = new StopAnalyzer();
-                //Analyzer analyzer = new StandardAnalyzer();
-                Analyzer analyzer = new MorfologikAnalyzer();
+                Analyzer analyzer = new StandardAnalyzer();
+//                Analyzer analyzer = new MorfologikAnalyzer();
 	            IndexWriterConfig config = new IndexWriterConfig(analyzer);
 
                 if(create){
