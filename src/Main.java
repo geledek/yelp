@@ -21,7 +21,7 @@ public class Main {
         ReviewJSON2CSV.convert(reviewJSON.toPath());
 
         Indexer indexer = new Indexer(indexPath);
-        indexer.rebuildIndexes();
+//        indexer.rebuildIndexes();
 
         SearchEngine se = new SearchEngine(indexPath);
     }
