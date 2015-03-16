@@ -1,0 +1,9 @@
+<component name="libraryTable">
+  <library name="morfologik-stemming-1.10.0">
+    <CLASSES>
+      <root url="jar://$PROJECT_DIR$/lib/morfologik-stemming-1.10.0.jar!/" />
+    </CLASSES>
+    <JAVADOC />
+    <SOURCES />
+  </library>
+</component>
