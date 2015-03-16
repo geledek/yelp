@@ -32,11 +32,9 @@ public class Indexer {
 	        if (indexWriter == null) {
 	            Directory indexDir = FSDirectory.open(new File(indexPath).toPath());
 
-                System.out.println("MorfologikAnalyzer:");
                 //Analyzer analyzer = new SimpleAnalyzer();
                 //Analyzer analyzer = new StopAnalyzer();
-                //Analyzer analyzer = new StandardAnalyzer();
-                Analyzer analyzer = new MorfologikAnalyzer();
+                Analyzer analyzer = new StandardAnalyzer();
 	            IndexWriterConfig config = new IndexWriterConfig(analyzer);
 
                 if(create){
