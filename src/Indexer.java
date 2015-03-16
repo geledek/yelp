@@ -1,3 +1,7 @@
+import org.apache.lucene.analysis.*;
+import org.apache.lucene.analysis.core.SimpleAnalyzer;
+import org.apache.lucene.analysis.core.StopAnalyzer;
+
 import org.apache.lucene.analysis.standard.StandardAnalyzer;
 import org.apache.lucene.document.*;
 import org.apache.lucene.index.IndexWriter;
@@ -15,8 +19,6 @@ import java.text.ParseException;
 import java.util.HashMap;
 
 import static org.apache.lucene.index.IndexWriterConfig.OpenMode.CREATE;
-//import java.io.Writer;
-//import org.apache.lucene.document.StringField;
 
 
 public class Indexer {
@@ -30,7 +32,13 @@ public class Indexer {
 	    private IndexWriter getIndexWriter(boolean create) throws IOException {
 	        if (indexWriter == null) {
 	            Directory indexDir = FSDirectory.open(new File(indexPath).toPath());
-	            IndexWriterConfig config = new IndexWriterConfig(new StandardAnalyzer());
+
+                System.out.println("StandardAnalyzer:");
+                //Analyzer analyzer = new SimpleAnalyzer();
+                //Analyzer analyzer = new StopAnalyzer();
+                //Analyzer analyzer = new StandardAnalyzer();
+                Analyzer analyzer = new MorphologikAnalyzer();
+	            IndexWriterConfig config = new IndexWriterConfig(analyzer);
 
                 if(create){
                     config.setOpenMode(OpenMode.CREATE);
@@ -144,8 +152,8 @@ public class Indexer {
         double seconds_1 = (stepTime - startTime) / 1.0E09;
         double seconds_2 = (endTime - stepTime) / 1.0E09;
         System.out.println("Indexing done.");
-        System.out.println( count + " reviews added in " + seconds_1 + "s");
-        System.out.println( indexWriter.numDocs() + " entries indexed in " + seconds_2 + "s");
+        System.out.printf("%d reviews added in %.2fs\n", count, seconds_1);
+        System.out.printf("%d entries indexed in %.2fs\n", indexWriter.numDocs(), seconds_2);
         closeIndexWriter();
     }
 }
