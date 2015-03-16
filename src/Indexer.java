@@ -1,7 +1,10 @@
 import org.apache.lucene.analysis.Analyzer;
-import org.apache.lucene.analysis.morfologik.MorfologikAnalyzer;
+import org.apache.lucene.analysis.standard.StandardAnalyzer;
 import org.apache.lucene.document.*;
 import org.apache.lucene.index.IndexWriter;
+//import org.apache.lucene.analysis.snowball.SnowballFilter;
+import org.tartarus.snowball.SnowballProgram;
+import org.tartarus.snowball.ext.EnglishStemmer;
 import org.apache.lucene.index.IndexWriterConfig;
 import org.apache.lucene.index.IndexWriterConfig.OpenMode;
 import org.apache.lucene.index.Term;
@@ -35,9 +38,13 @@ public class Indexer {
                 System.out.println("MorfologikAnalyzer:");
                 //Analyzer analyzer = new SimpleAnalyzer();
                 //Analyzer analyzer = new StopAnalyzer();
-                //Analyzer analyzer = new StandardAnalyzer();
-                Analyzer analyzer = new MorfologikAnalyzer();
-	            IndexWriterConfig config = new IndexWriterConfig(analyzer);
+                Analyzer analyzer = new StandardAnalyzer();
+
+                EnglishStemmer enStemming = new EnglishStemmer();
+
+
+
+                IndexWriterConfig config = new IndexWriterConfig(analyzer);
 
                 if(create){
                     config.setOpenMode(OpenMode.CREATE);
