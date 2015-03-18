@@ -13,14 +13,14 @@ public class Main {
     public static void main(String[] args) throws org.apache.lucene.queryparser.classic.ParseException, ParseException, IOException {
 
         String dir = args[0];
-        String indexPath = "index-directory";
-        File businessJSON = new File(dir + "yelp_academic_dataset_business.json");
-        File reviewJSON = new File(dir + "yelp_academic_dataset_review.json");
+        String indexPath = "index";
+//        File businessJSON = new File(dir + "/yelp_academic_dataset_business.json");
+//        File reviewJSON = new File(dir + "/yelp_academic_dataset_review.json");
 
-        BusinessJSON2CSV.convert(businessJSON.toPath());
-        ReviewJSON2CSV.convert(reviewJSON.toPath());
+//        BusinessJSON2CSV.convert(businessJSON.toPath());
+//        ReviewJSON2CSV.convert(reviewJSON.toPath());
 
-        Indexer indexer = new Indexer(indexPath);
+        Indexer indexer = new Indexer(dir, indexPath);
         indexer.rebuildIndexes();
 
 //        SearchEngine se = new SearchEngine(indexPath);

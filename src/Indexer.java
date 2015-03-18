@@ -1,6 +1,6 @@
 import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.analysis.standard.StandardAnalyzer;
-import org.tartarus.snowball.SnowballProgram;
+import org.json.JSONObject;
 import org.tartarus.snowball.ext.EnglishStemmer;
 import org.apache.lucene.document.*;
 import org.apache.lucene.index.IndexWriter;
@@ -23,7 +23,7 @@ import static org.apache.lucene.index.IndexWriterConfig.OpenMode.CREATE;
 
 
 public class Indexer {
-
+        private String dir = null;
         private String indexPath = null;
         private IndexWriter indexWriter = null;
 
@@ -51,7 +51,8 @@ public class Indexer {
 	        return indexWriter;
 	   }
 
-        public Indexer(String path) {
+        public Indexer(String dir, String path) {
+            this.dir = dir;
             indexPath = path;
         }
 
@@ -61,114 +62,169 @@ public class Indexer {
 	        }
 	    }
 	    
-	    public void indexReview(Review review) throws IOException, ParseException {
+	    public void indexReviews() throws IOException, ParseException {
 
 	        IndexWriter writer = getIndexWriter(true);
 	        Document doc = new Document();
 
-	        doc.add(new StringField("businessId", review.getBusinessId(), Field.Store.NO));
-	        doc.add(new StringField("userId", review.getUserId(), Field.Store.NO));
-	        doc.add(new DoubleField("stars", Double.valueOf(review.getStars()), Field.Store.YES));
-	        doc.add(new TextField("review", review.getText(), Field.Store.YES));
-	        doc.add(new StringField("date", review.getDate(), Field.Store.YES));
+            int count = 0;
 
-            doc.add(new StringField("businessName", review.getBusinessName(), Field.Store.YES));
-            doc.add(new DoubleField("longitude", Double.valueOf(review.getLongitude()), Field.Store.YES));
-            doc.add(new DoubleField("latitude", Double.valueOf(review.getLatitude()), Field.Store.YES));
-            doc.add(new DoubleField("businessStars", Double.valueOf(review.getBusinessStars()), Field.Store.YES));
+            BufferedReader br = new BufferedReader(new FileReader(dir + "/yelp_academic_dataset_review.json"));
+            String line;
+            JSONObject review = null;
+            JSONObject business = null;
+            JSONObject hours = null;
 
-            if (writer.getConfig().getOpenMode() == CREATE) {
+            EnglishStemmer engStemmer = new EnglishStemmer();
+
+            while ((line = br.readLine()) != null) {
+                try {
+                    review = new JSONObject(line);
+                    String businessId = (String) review.get("business_id");
+                    business = (JSONObject) businessMap.get(businessId);
+
+                    if (business == null) {
+                        continue;
+                    }
+
+                    hours = business.getJSONObject("hours");
+
+                    Double stars = Double.valueOf((review.get("stars").toString()));
+                    String reviewText = (String) review.get("text");
+                    String date = (String) review.get("date");
+
+                    doc.add(new StringField("businessId", businessId, Field.Store.NO));
+                    doc.add(new DoubleField("stars", stars, Field.Store.YES));
+                    doc.add(new TextField("review", reviewText, Field.Store.YES));
+                    doc.add(new StringField("date", date, Field.Store.YES));
+
+                    String name = (String) business.get("name");
+                    String address = (String) business.get("full_address");
+                    Double longitude = Double.valueOf(business.get("longitude").toString());
+                    Double latitude = Double.valueOf(business.get("latitude").toString());
+                    Double businessStars = Double.valueOf(business.get("stars").toString());
+                    Integer reviewCount = Integer.valueOf(business.get("review_count").toString());
+
+                    doc.add(new StringField("businessName", name, Field.Store.YES));
+                    doc.add(new StringField("address", address, Field.Store.YES));
+                    doc.add(new DoubleField("longitude", longitude, Field.Store.YES));
+                    doc.add(new DoubleField("latitude", latitude, Field.Store.YES));
+                    doc.add(new DoubleField("businessStars", businessStars, Field.Store.YES));
+                    doc.add(new IntField("reviewCount", reviewCount, Field.Store.YES));
+
+                    if (hours != null) {
+                        String monday = hours.get("Monday").toString();
+                        String tuesday = hours.get("Tuesday").toString();
+                        String wednesday = hours.get("Wednesday").toString();
+                        String thursday = hours.get("Thursday").toString();
+                        String friday = hours.get("Friday").toString();
+                        String saturday = hours.get("Saturday").toString();
+                        String sunday = hours.get("Sunday").toString();
+
+                        doc.add(new StringField("Monday", monday, Field.Store.YES));
+                        doc.add(new StringField("Tuesday", tuesday, Field.Store.YES));
+                        doc.add(new StringField("Wednesday", wednesday, Field.Store.YES));
+                        doc.add(new StringField("Thursday", thursday, Field.Store.YES));
+                        doc.add(new StringField("Friday", friday, Field.Store.YES));
+                        doc.add(new StringField("Saturday", saturday, Field.Store.YES));
+                        doc.add(new StringField("Sunday", sunday, Field.Store.YES));
+                    }
+
                     writer.addDocument(doc);
-             } else {
-                String fullSearchableText = review.getBusinessName() + " (" + review.getLongitude() + review.getLatitude() + ") " + review.getDate()
-                + " " + review.getVote();
-                writer.updateDocument(new Term("path", fullSearchableText), doc);
+                    System.out.println(count++);
+
+                } catch (Exception e){
+                }
             }
 	    }
 
     public void constructBusinessMapping() throws IOException {
-            BufferedReader br = new BufferedReader(new FileReader("datasets/yelp_academic_dataset_business.csv"));
+            BufferedReader br = new BufferedReader(new FileReader(dir + "/yelp_academic_dataset_business.json"));
             String line;
             while ((line = br.readLine()) != null) {
-                    String[] fields = line.split("\t",2);
-                    businessMap.put(fields[0], fields[1]);
+                    JSONObject businessObj = new JSONObject(line);
+                    String businessId = (String) businessObj.get("business_id");
+                    businessMap.put(businessId, businessObj);
             }
     }
 
-    public void constructReviewIndex() throws IOException, ParseException {
-        BufferedReader br = new BufferedReader(new FileReader("datasets/yelp_academic_dataset_review.csv"));
-        String line;
-        Review review;
-        String[] fields;
-        String[] moreFields;
-
-        EnglishStemmer enstemmer = new EnglishStemmer();
-
-        while ((line = br.readLine()) != null) {
-            fields = line.split("\t");
-            String additional;
-
-            additional = (String) businessMap.get(fields[0]);
-
-            if (additional == null){
-                continue;
-            }
-
-            String business_id = fields[0] != null? fields[0]: null;
-            String user_id = fields[1] != null? fields[1]: null;
-            String stars = fields[2] != null? fields[2]: null;
-            String text = fields[3] != null? fields[3]: null;
-
-            String[] words;
-            words = fields[3].split(" ");
-            for (int i = 0; i < words.length; i++) {
-                enstemmer.setCurrent(words[i]);
-                enstemmer.stem();
-                words[i] = enstemmer.getCurrent();
-            }
-            fields[3] = null;
-            for (int j = 0; j < words.length; j++){
-                fields[3] = fields[3] + " " + words[j];
-            }
-
-
-            String date = fields[4] != null? fields[4]: null;
-            String voteFunny = fields[5] != null? fields[5]: null;
-            String voteUseful = fields[6] != null? fields[6]: null;
-            String voteCool = fields[7] != null? fields[7]: null;
-
-            moreFields = additional.split("\t");
-            String businessName = moreFields[0] != null? moreFields[0]: null;
-            String longitude = moreFields[5] != null? moreFields[5]: null;
-            String latitude = moreFields[6] != null? moreFields[6]: null;
-            String businessStars = moreFields[7] != null? moreFields[7]: null;
-
-            review = new Review(business_id, user_id, stars,text, date, voteFunny, voteUseful, voteCool, businessName, longitude, latitude, businessStars);
-            indexReview(review);
-            count++;
-        }
-        System.out.println("Review list completed. Count: " + count);
-    }
+//    public void constructReviewIndex() throws IOException, ParseException {
+//        BufferedReader br = new BufferedReader(new FileReader(dir + "/yelp_academic_dataset_review.json"));
+//        String line;
+//        Review review;
+//        String[] fields;
+//        String[] moreFields;
+//        JSONObject reviewObj = null;
+//        JSONObject businessObj = null;
+//
+//        EnglishStemmer enstemmer = new EnglishStemmer();
+//
+//        while ((line = br.readLine()) != null) {
+//            reviewObj = new JSONObject(line);
+//            String businessId = (String) reviewObj.get("business_id");
+//            businessObj = (JSONObject)businessMap.get(businessId);
+//
+//            if (businessObj == null){
+//                continue;
+//            }
+//
+//            String business_id = fields[0] != null? fields[0]: null;
+//            String user_id = fields[1] != null? fields[1]: null;
+//            String stars = fields[2] != null? fields[2]: null;
+//            String text = fields[3] != null? fields[3]: null;
+//
+//            String[] words;
+//            words = fields[3].split(" ");
+//            for (int i = 0; i < words.length; i++) {
+//                enstemmer.setCurrent(words[i]);
+//                enstemmer.stem();
+//                words[i] = enstemmer.getCurrent();
+//            }
+//            fields[3] = null;
+//            for (int j = 0; j < words.length; j++){
+//                fields[3] = fields[3] + " " + words[j];
+//            }
+//
+//
+//            String date = fields[4] != null? fields[4]: null;
+//            String voteFunny = fields[5] != null? fields[5]: null;
+//            String voteUseful = fields[6] != null? fields[6]: null;
+//            String voteCool = fields[7] != null? fields[7]: null;
+//
+//            moreFields = additional.split("\t");
+//            String businessName = moreFields[0] != null? moreFields[0]: null;
+//            String longitude = moreFields[5] != null? moreFields[5]: null;
+//            String latitude = moreFields[6] != null? moreFields[6]: null;
+//            String businessStars = moreFields[7] != null? moreFields[7]: null;
+//
+//            review = new Review(business_id, user_id, stars,text, date, voteFunny, voteUseful, voteCool, businessName, longitude, latitude, businessStars);
+//            indexReviews(review);
+//            count++;
+//        }
+//        System.out.println("Review list completed. Count: " + count);
+//    }
 
     public void rebuildIndexes() throws IOException, org.apache.lucene.queryparser.classic.ParseException, ParseException {
 
         long startTime = System.nanoTime();
         getIndexWriter(true);
         System.out.println("Constructing business map..");
+
         constructBusinessMapping();
 
-        System.out.println("Indexing reviews...");
-        long stepTime = System.nanoTime();
-
-        constructReviewIndex();
-        
         long endTime = System.nanoTime();
+        double seconds = (endTime - startTime) / 1.0E09;
+        System.out.printf("%d business records added in hashmap in %.2fs\n", businessMap.size(), seconds);
 
-        double seconds_1 = (stepTime - startTime) / 1.0E09;
-        double seconds_2 = (endTime - stepTime) / 1.0E09;
+        System.out.println("Indexing reviews...");
+        startTime = System.nanoTime();
+        indexReviews();
+        endTime = System.nanoTime();
+
+        seconds = (endTime - startTime) / 1.0E09;
         System.out.println("Indexing done.");
-        System.out.printf("%d reviews added in %.2fs\n", count, seconds_1);
-        System.out.printf("%d entries indexed in %.2fs\n", indexWriter.numDocs(), seconds_2);
+        System.out.printf("%d reviews added in %.2fs\n", count, seconds);
+        System.out.printf("%d entries indexed in %.2fs\n", indexWriter.numDocs(), seconds);
         closeIndexWriter();
     }
 }
