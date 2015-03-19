@@ -18,18 +18,18 @@ public class ReviewJSON2CSV {
 			InputStream fis = new FileInputStream(path.toString());
 			InputStreamReader isr = new InputStreamReader(fis, Charset.forName("UTF-8"));
 
-            File distPath = new File("datasets");
-            File distFile = new File(distPath.toString() + "/yelp_academic_dataset_review.csv");
+            //File distPath = new File("datasets");
+            //File distFile = new File(distPath.toString() + "/yelp_academic_dataset_review.csv");
 
 
-            if(distFile.exists()){
-                return;
-            }
+            //if(distFile.exists()){
+            //    return;
+            //}
 
-            if(!distPath.exists()){
-                distPath.mkdir();
-            }
-			PrintWriter pw = new PrintWriter (distFile.toString(), "UTF-8");
+            //if(!distPath.exists()){
+            //    distPath.mkdir();
+            //}
+			//PrintWriter pw = new PrintWriter (distFile.toString(), "UTF-8");
 			BufferedReader br = new BufferedReader(isr);
 
             System.out.println("JSON to CSV format conversion in progress...");
@@ -66,7 +66,7 @@ public class ReviewJSON2CSV {
 
 				output = output + voteFunny + "\t" + voteUseful + "\t" + voteCool;
 
-				pw.println(output);
+				//pw.println(output);
                 lines++;
 			}
 
@@ -77,8 +77,8 @@ public class ReviewJSON2CSV {
             fis.close();
 			isr.close();
 			br.close();
-            pw.flush();
-			pw.close();
+            //pw.flush();
+			//pw.close();
 		} catch (FileNotFoundException e) {
 			e.printStackTrace();
 		} catch (IOException e) {

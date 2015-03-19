@@ -17,6 +17,8 @@ public class Review {
     private String fullAddress;
     private String city;
     private String state;
+    private String neighborhoods;
+    private String category;
 
 
     public Review() {
@@ -34,7 +36,12 @@ public class Review {
                   String name,
                   String longitude,
                   String latitude,
-                  String businessStars) {
+                  String businessStars,
+                  String fullAddress,
+                  String city,
+                  String state,
+                  String neighborhoods,
+                  String category) {
         this.businessId = businessId;
         this.userId = userId;
         this.stars = stars;   
@@ -48,6 +55,31 @@ public class Review {
         this.longitude = longitude;
         this.latitude = latitude;
         this.businessStars = businessStars;
+        this.fullAddress = fullAddress;
+        this.city = city;
+        this.state = state;
+        this.neighborhoods = neighborhoods;
+        this.category = category;
+    }
+
+    public String getFullAddress () {
+        return fullAddress;
+    }
+
+    public String getCity () {
+        return city;
+    }
+
+    public String getState () {
+        return state;
+    }
+
+    public String getNeighborhoods () {
+        return neighborhoods;
+    }
+
+    public String getCategory () {
+        return category;
     }
 
     public String getBusinessId() {
@@ -130,6 +162,8 @@ public class Review {
         this.voteCool = voteCool;
     }
 
+
+
     public String toString() {
         return "Review "
                 + getBusinessId() + "\t"
@@ -143,7 +177,12 @@ public class Review {
                 + getBusinessName() + "\t"
                 + getLongitude() + "\t"
                 + getLatitude() + "\t"
-                + getBusinessStars() + "\n";
+                + getBusinessStars() + "\t"
+                + getFullAddress() + "\t"
+                + getCity() + "\t"
+                + getState() + "\t"
+                + getNeighborhoods() + "\t"
+                + getCategory() + "\n";
                
     }
 
