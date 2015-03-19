@@ -1,7 +1,5 @@
 import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.analysis.standard.StandardAnalyzer;
-import org.tartarus.snowball.SnowballProgram;
-import org.tartarus.snowball.ext.EnglishStemmer;
 import org.apache.lucene.document.*;
 import org.apache.lucene.index.IndexWriter;
 import org.apache.lucene.index.IndexWriterConfig;
@@ -9,6 +7,7 @@ import org.apache.lucene.index.IndexWriterConfig.OpenMode;
 import org.apache.lucene.index.Term;
 import org.apache.lucene.store.Directory;
 import org.apache.lucene.store.FSDirectory;
+import org.tartarus.snowball.ext.EnglishStemmer;
 
 import java.io.BufferedReader;
 import java.io.File;
