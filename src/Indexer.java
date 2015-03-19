@@ -12,6 +12,7 @@ import org.apache.lucene.index.IndexWriterConfig.OpenMode;
 import org.apache.lucene.index.Term;
 import org.apache.lucene.store.Directory;
 import org.apache.lucene.store.FSDirectory;
+import sun.security.provider.Sun;
 
 import java.io.*;
 import java.nio.charset.Charset;
@@ -50,11 +51,18 @@ public class Indexer {
                 Analyzer analyzer = null;
                 if ( choice == 1 ){
                     analyzer = new SimpleAnalyzer();
+                    System.out.println( "SimpleAnalyzer processing:" );
                 } else if ( choice == 2 ) {
                     analyzer = new StopAnalyzer();
-                } else if ( choice == 3 || choice == 4) {
+                    System.out.println( "StopAnalyzer processing:" );
+                } else if ( choice == 3 ) {
                     analyzer = new StandardAnalyzer();
+                    System.out.println( "StandardAnalyzer processing:" );
+                } else if ( choice == 4 ) {
+                    analyzer = new StandardAnalyzer();
+                    System.out.println( "StemmerAnalyzer processing:" );
                 }
+
 
 	            IndexWriterConfig config = new IndexWriterConfig(analyzer);
 
@@ -100,10 +108,18 @@ public class Indexer {
             doc.add(new StringField("state", review.getState(), Field.Store.YES));
             doc.add(new StringField("neighborhoods", review.getNeighborhoods(), Field.Store.YES));
             doc.add(new StringField("category", review.getCategory(), Field.Store.YES));
+            doc.add(new StringField("Monday", review.getMonday(), Field.Store.YES));
+            doc.add(new StringField("Tuesday", review.getTuesday(), Field.Store.YES));
+            doc.add(new StringField("Wednesday", review.getWednesday(), Field.Store.YES));
+            doc.add(new StringField("Thursday", review.getThursday(), Field.Store.YES));
+            doc.add(new StringField("Friday", review.getFriday(), Field.Store.YES));
+            doc.add(new StringField("Saturday", review.getSaturday(), Field.Store.YES));
+            doc.add(new StringField("Sunday", review.getSunday(), Field.Store.YES));
+
 
             if (writer.getConfig().getOpenMode() == CREATE) {
                     writer.addDocument(doc);
-             } else {
+            } else {
                 String fullSearchableText = review.getBusinessName() + " (" + review.getLongitude() + review.getLatitude() + ") " + review.getDate()
                 + " " + review.getVote();
                 writer.updateDocument(new Term("path", fullSearchableText), doc);
@@ -166,8 +182,30 @@ public class Indexer {
             Boolean isOpen = (Boolean) business.get("open");
             output = output + Boolean.toString(isOpen) + "\t";
 
+            String Monday = null;
+            String Tuesday = null;
+            String Wednesday = null;
+            String Thursday = null;
+            String Friday = null;
+            String Saturday = null;
+            String Sunday = null;
+
+            if ( business.get("hours") != null){
+
+                JSONObject hour = business.getJSONObject("hours");
+
+                if ( hour.has("Monday"))Monday = hour.get("Monday").toString();
+                if ( hour.has("Tuesday"))Tuesday = hour.get("Tuesday").toString();
+                if ( hour.has("Wednesday"))Wednesday = hour.get("Wednesday").toString();
+                if ( hour.has("Thursday"))Thursday = hour.get("Thursday").toString();
+                if ( hour.has("Friday"))Friday = hour.get("Friday").toString();
+                if ( hour.has("Saturday"))Saturday = hour.get("Saturday").toString();
+                if ( hour.has("Sunday"))Sunday = hour.get("Sunday").toString();
+
+            }
             String hours = business.get("hours").toString();
-            output = output + hours + "\t";
+            output = output + Monday + "\t" + Tuesday + "\t" + Wednesday + "\t" + Thursday + "\t"
+                     + Friday + "\t" + Saturday + "\t" + Sunday + "\t";
 
             String attributes = business.get("attributes").toString();
             output = output + attributes;
@@ -276,11 +314,21 @@ public class Indexer {
             String state = moreFields[4] != null? moreFields[4]: null;
             String neighborhoods = moreFields[1] != null? moreFields[1]: null;
             String category = moreFields[9] != null? moreFields[9]: null;
+            String Monday = moreFields[11] != null? moreFields[11]: null;
+            String Tuesday = moreFields[12] != null? moreFields[12]: null;
+            String Wednesday = moreFields[13] != null? moreFields[13]: null;
+            String Thursday = moreFields[14] != null? moreFields[14]: null;
+            String Friday = moreFields[15] != null? moreFields[15]: null;
+            String Saturday = moreFields[16] != null? moreFields[16]: null;
+            String Sunday = moreFields[17] != null? moreFields[17]: null;
+
+
 
 
             Review inReview = new Review(business_id_map, user_id_map, stars_map,text_map, date_map,
                     voteFunny_map, voteUseful_map, voteCool_map, businessName, longitude,
-                    latitude, businessStars, fullAddress, city, state, neighborhoods, category);
+                    latitude, businessStars, fullAddress, city, state, neighborhoods, category,
+                    Monday, Tuesday, Wednesday, Thursday, Friday, Saturday, Sunday);
             indexReview(inReview);
 
 
