@@ -1,5 +1,7 @@
 import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.analysis.standard.StandardAnalyzer;
+import org.apache.lucene.analysis.core.SimpleAnalyzer;
+import org.apache.lucene.analysis.core.StopAnalyzer;
 import org.tartarus.snowball.SnowballProgram;
 import org.tartarus.snowball.ext.EnglishStemmer;
 import org.apache.lucene.document.*;
@@ -10,10 +12,7 @@ import org.apache.lucene.index.Term;
 import org.apache.lucene.store.Directory;
 import org.apache.lucene.store.FSDirectory;
 
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileReader;
-import java.io.IOException;
+import java.io.*;
 import java.text.ParseException;
 import java.util.HashMap;
 
@@ -29,14 +28,31 @@ public class Indexer {
 
         private HashMap businessMap = new HashMap();
         private static int count = 0;
+        private BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
+        private int choice = 0;
 
 	    private IndexWriter getIndexWriter(boolean create) throws IOException {
 	        if (indexWriter == null) {
 	            Directory indexDir = FSDirectory.open(new File(indexPath).toPath());
 
-                //Analyzer analyzer = new SimpleAnalyzer();
-                //Analyzer analyzer = new StopAnalyzer();
-                Analyzer analyzer = new StandardAnalyzer();
+
+                System.out.println("Please choose analyzer type:" +
+                        "\n 1. SimpleAnalyzer" +
+                        "\n 2. StopAnalyzer" +
+                        "\n 3. StandardAnalyzer" +
+                        "\n 4. StemmerAnalyzer");
+
+                choice = Integer.parseInt(br.readLine());
+
+                Analyzer analyzer = null;
+                if ( choice == 1 ){
+                    analyzer = new SimpleAnalyzer();
+                } else if ( choice == 2 ) {
+                    analyzer = new StopAnalyzer();
+                } else if ( choice == 3 || choice == 4) {
+                    analyzer = new StandardAnalyzer();
+                }
+
 	            IndexWriterConfig config = new IndexWriterConfig(analyzer);
 
                 if(create){
@@ -119,17 +135,20 @@ public class Indexer {
             String stars = fields[2] != null? fields[2]: null;
             String text = fields[3] != null? fields[3]: null;
 
-            String[] words;
-            words = fields[3].split(" ");
-            for (int i = 0; i < words.length; i++) {
-                enstemmer.setCurrent(words[i]);
-                enstemmer.stem();
-                words[i] = enstemmer.getCurrent();
+            if ( choice == 4) {
+                String[] words;
+                words = fields[3].split(" ");
+                for (int i = 0; i < words.length; i++) {
+                    enstemmer.setCurrent(words[i]);
+                    enstemmer.stem();
+                    words[i] = enstemmer.getCurrent();
+                }
+                fields[3] = null;
+                for (int j = 0; j < words.length; j++){
+                    fields[3] = fields[3] + " " + words[j];
+                }
             }
-            fields[3] = null;
-            for (int j = 0; j < words.length; j++){
-                fields[3] = fields[3] + " " + words[j];
-            }
+
 
 
             String date = fields[4] != null? fields[4]: null;

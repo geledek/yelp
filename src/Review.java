@@ -14,6 +14,10 @@ public class Review {
     private String longitude;
     private String latitude;
     private String businessStars;
+    private String fullAddress;
+    private String city;
+    private String state;
+
 
     public Review() {
     }
