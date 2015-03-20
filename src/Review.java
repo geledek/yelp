@@ -19,6 +19,13 @@ public class Review {
     private String state;
     private String neighborhoods;
     private String category;
+    private String monday;
+    private String tuesday;
+    private String wednesday;
+    private String thursday;
+    private String friday;
+    private String saturday;
+    private String sunday;
 
 
     public Review() {
@@ -41,7 +48,14 @@ public class Review {
                   String city,
                   String state,
                   String neighborhoods,
-                  String category) {
+                  String category,
+                  String monday,
+                  String tuesday,
+                  String wednesday,
+                  String thursday,
+                  String friday,
+                  String saturday,
+                  String sunday) {
         this.businessId = businessId;
         this.userId = userId;
         this.stars = stars;   
@@ -60,6 +74,13 @@ public class Review {
         this.state = state;
         this.neighborhoods = neighborhoods;
         this.category = category;
+        this.monday = monday;
+        this.tuesday = tuesday;
+        this.wednesday = wednesday;
+        this.thursday = thursday;
+        this.friday = friday;
+        this.saturday = saturday;
+        this.sunday = sunday;
     }
 
     public String getFullAddress () {
@@ -162,6 +183,33 @@ public class Review {
         this.voteCool = voteCool;
     }
 
+    public String getMonday () {
+        return monday;
+    }
+
+    public String getTuesday () {
+        return tuesday;
+    }
+
+    public String getWednesday () {
+        return wednesday;
+    }
+
+    public String getThursday () {
+        return thursday;
+    }
+
+    public String getFriday () {
+        return friday;
+    }
+
+    public String getSaturday () {
+        return saturday;
+    }
+
+    public String getSunday () {
+        return sunday;
+    }
 
 
     public String toString() {
@@ -182,7 +230,14 @@ public class Review {
                 + getCity() + "\t"
                 + getState() + "\t"
                 + getNeighborhoods() + "\t"
-                + getCategory() + "\n";
+                + getCategory() + "\t"
+                + getMonday() + "\t"
+                + getTuesday() + "\t"
+                + getWednesday() + "\t"
+                + getThursday() + "\t"
+                + getFriday() + "\t"
+                + getSaturday() + "\t"
+                + getSunday() + "\n";
                
     }
 
