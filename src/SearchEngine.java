@@ -95,7 +95,6 @@ public class SearchEngine {
         combine.add(longitudeQuery, BooleanClause.Occur.MUST);
         combine.add(latitudeQuery, BooleanClause.Occur.MUST);
         return searcher.search(combine, topN);
-
     }
 
     public void presentResult(TopDocs topDocs) throws IOException {
@@ -109,8 +108,7 @@ public class SearchEngine {
                     + "\t[[" + doc.get("businessName") + "]]"
                     + "\t|Business Stars: " + doc.get("businessStars")
                     + "\t|Review Stars: " + doc.get("reviewStars")
-                    + "\t(" + doc.get("longitude") + ", "
-                    + "\t" + doc.get("latitude")
+                    + "\t|(" + doc.get("longitude") + ", " + doc.get("latitude")
                     + ")\n\t\t|Review: " + doc.get("review"));
         }
     }

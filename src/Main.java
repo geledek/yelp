@@ -22,5 +22,6 @@ public class Main {
         indexer.rebuildIndexes(businessJSON.toPath(), reviewJSON.toPath());
 
         SearchEngine se = new SearchEngine(indexPath);
+        se.searchingMenu();
     }
 }
