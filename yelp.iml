@@ -21,5 +21,6 @@
     <orderEntry type="library" name="lucene-core-5.0.0" level="project" />
     <orderEntry type="library" name="lucene-demo-5.0.0" level="project" />
     <orderEntry type="library" name="lucene-queryparser-5.0.0" level="project" />
+    <orderEntry type="library" name="lucene-highlighter-5.0.0" level="application" />
   </component>
 </module>

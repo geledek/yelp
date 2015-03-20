@@ -1,10 +1,7 @@
 import org.apache.lucene.analysis.Analyzer;
-import org.apache.lucene.analysis.standard.StandardAnalyzer;
 import org.apache.lucene.analysis.core.SimpleAnalyzer;
 import org.apache.lucene.analysis.core.StopAnalyzer;
-import org.json.JSONObject;
-import org.tartarus.snowball.SnowballProgram;
-import org.tartarus.snowball.ext.EnglishStemmer;
+import org.apache.lucene.analysis.standard.StandardAnalyzer;
 import org.apache.lucene.document.*;
 import org.apache.lucene.index.IndexWriter;
 import org.apache.lucene.index.IndexWriterConfig;
@@ -12,7 +9,8 @@ import org.apache.lucene.index.IndexWriterConfig.OpenMode;
 import org.apache.lucene.index.Term;
 import org.apache.lucene.store.Directory;
 import org.apache.lucene.store.FSDirectory;
-import sun.security.provider.Sun;
+import org.json.JSONObject;
+import org.tartarus.snowball.ext.EnglishStemmer;
 
 import java.io.*;
 import java.nio.charset.Charset;
@@ -40,7 +38,8 @@ public class Indexer {
 	            Directory indexDir = FSDirectory.open(new File(indexPath).toPath());
 
 
-                System.out.println("Please choose analyzer type:" +
+
+                System.out.println("Please choose analyzer type: (Default 3)" +
                         "\n 1. SimpleAnalyzer" +
                         "\n 2. StopAnalyzer" +
                         "\n 3. StandardAnalyzer" +
@@ -49,6 +48,8 @@ public class Indexer {
                 choice = Integer.parseInt(br.readLine());
 
                 Analyzer analyzer = null;
+
+
                 if ( choice == 1 ){
                     analyzer = new SimpleAnalyzer();
                     System.out.println( "SimpleAnalyzer processing:" );
@@ -61,8 +62,10 @@ public class Indexer {
                 } else if ( choice == 4 ) {
                     analyzer = new StandardAnalyzer();
                     System.out.println( "StemmerAnalyzer processing:" );
+                } else{
+                    analyzer = new StandardAnalyzer();
+                    System.out.println( "StandardAnalyzer processing:" );
                 }
-
 
 	            IndexWriterConfig config = new IndexWriterConfig(analyzer);
 
@@ -95,8 +98,16 @@ public class Indexer {
 
 	        doc.add(new StringField("businessId", review.getBusinessId(), Field.Store.NO));
 	        doc.add(new StringField("userId", review.getUserId(), Field.Store.NO));
-	        doc.add(new DoubleField("stars", Double.valueOf(review.getStars()), Field.Store.YES));
-	        doc.add(new TextField("review", review.getText(), Field.Store.YES));
+
+            FieldType newType = new FieldType(StringField.TYPE_STORED);
+            newType.setOmitNorms(false);
+
+            /*TODO: FIGURE OUT HOW TO BOOST*/
+            Field stars = new Field("reviewStars", review.getStars(), newType);
+            doc.add(stars);
+//            stars.setBoost(((Float.valueOf(review.getStars()) - 3.0F)*10.0F));
+
+            doc.add(new TextField("review", review.getText(), Field.Store.YES));
 	        doc.add(new StringField("date", review.getDate(), Field.Store.YES));
 
             doc.add(new StringField("businessName", review.getBusinessName(), Field.Store.YES));
@@ -115,7 +126,6 @@ public class Indexer {
             doc.add(new StringField("Friday", review.getFriday(), Field.Store.YES));
             doc.add(new StringField("Saturday", review.getSaturday(), Field.Store.YES));
             doc.add(new StringField("Sunday", review.getSunday(), Field.Store.YES));
-
 
             if (writer.getConfig().getOpenMode() == CREATE) {
                     writer.addDocument(doc);
