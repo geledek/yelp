@@ -18,22 +18,22 @@ public class BusinessJSON2CSV {
 			InputStream fis = new FileInputStream(path.toString());
 			InputStreamReader isr = new InputStreamReader(fis, Charset.forName("UTF-8"));
 
-			File distPath = new File("datasets");
-            File distFile = new File(distPath.toString() + "/yelp_academic_dataset_business.csv");
+			//File distPath = new File("datasets");
+            //File distFile = new File(distPath.toString() + "/yelp_academic_dataset_business.csv");
 
 
-            if(distFile.exists()){
-                return;
-            }
+            //if(distFile.exists()){
+            //    return;
+            //}
 
-            if(!distPath.exists()){
-                distPath.mkdir();
-            }
+            //if(!distPath.exists()){
+            //    distPath.mkdir();
+            //}
 
-			PrintWriter pw = new PrintWriter (distFile.toString(), "UTF-8");
+			//PrintWriter pw = new PrintWriter (distFile.toString(), "UTF-8");
 			BufferedReader br = new BufferedReader(isr);
 
-            System.out.println("JSON to CSV format conversion in progress...");
+            //System.out.println("JSON to CSV format conversion in progress...");
             long startTime = System.nanoTime();
 
 			while ((line = br.readLine()) != null) {
@@ -88,7 +88,7 @@ public class BusinessJSON2CSV {
                 String attributes = business.get("attributes").toString();
                 output = output + attributes;
 
-				pw.println(output);
+			//	pw.println(output);
                 lines++;
 			}
 
@@ -99,8 +99,8 @@ public class BusinessJSON2CSV {
 			fis.close();
 			isr.close();
 			br.close();
-			pw.flush();
-            pw.close();
+			//pw.flush();
+            //pw.close();
 		} catch (FileNotFoundException e) {
 			e.printStackTrace();
 		} catch (IOException e) {

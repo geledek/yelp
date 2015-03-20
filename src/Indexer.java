@@ -1,5 +1,10 @@
 import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.analysis.standard.StandardAnalyzer;
+import org.apache.lucene.analysis.core.SimpleAnalyzer;
+import org.apache.lucene.analysis.core.StopAnalyzer;
+import org.json.JSONObject;
+import org.tartarus.snowball.SnowballProgram;
+import org.tartarus.snowball.ext.EnglishStemmer;
 import org.apache.lucene.document.*;
 import org.apache.lucene.index.IndexWriter;
 import org.apache.lucene.index.IndexWriterConfig;
@@ -7,12 +12,10 @@ import org.apache.lucene.index.IndexWriterConfig.OpenMode;
 import org.apache.lucene.index.Term;
 import org.apache.lucene.store.Directory;
 import org.apache.lucene.store.FSDirectory;
-import org.tartarus.snowball.ext.EnglishStemmer;
 
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileReader;
-import java.io.IOException;
+import java.io.*;
+import java.nio.charset.Charset;
+import java.nio.file.Path;
 import java.text.ParseException;
 import java.util.HashMap;
 
@@ -28,14 +31,31 @@ public class Indexer {
 
         private HashMap businessMap = new HashMap();
         private static int count = 0;
+        private BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
+        private int choice = 0;
 
 	    private IndexWriter getIndexWriter(boolean create) throws IOException {
 	        if (indexWriter == null) {
 	            Directory indexDir = FSDirectory.open(new File(indexPath).toPath());
 
-                //Analyzer analyzer = new SimpleAnalyzer();
-                //Analyzer analyzer = new StopAnalyzer();
-                Analyzer analyzer = new StandardAnalyzer();
+
+                System.out.println("Please choose analyzer type:" +
+                        "\n 1. SimpleAnalyzer" +
+                        "\n 2. StopAnalyzer" +
+                        "\n 3. StandardAnalyzer" +
+                        "\n 4. StemmerAnalyzer");
+
+                choice = Integer.parseInt(br.readLine());
+
+                Analyzer analyzer = null;
+                if ( choice == 1 ){
+                    analyzer = new SimpleAnalyzer();
+                } else if ( choice == 2 ) {
+                    analyzer = new StopAnalyzer();
+                } else if ( choice == 3 || choice == 4) {
+                    analyzer = new StandardAnalyzer();
+                }
+
 	            IndexWriterConfig config = new IndexWriterConfig(analyzer);
 
                 if(create){
@@ -75,6 +95,11 @@ public class Indexer {
             doc.add(new DoubleField("longitude", Double.valueOf(review.getLongitude()), Field.Store.YES));
             doc.add(new DoubleField("latitude", Double.valueOf(review.getLatitude()), Field.Store.YES));
             doc.add(new DoubleField("businessStars", Double.valueOf(review.getBusinessStars()), Field.Store.YES));
+            doc.add(new StringField("fullAddress", review.getFullAddress(), Field.Store.YES));
+            doc.add(new StringField("city", review.getCity(), Field.Store.YES));
+            doc.add(new StringField("state", review.getState(), Field.Store.YES));
+            doc.add(new StringField("neighborhoods", review.getNeighborhoods(), Field.Store.YES));
+            doc.add(new StringField("category", review.getCategory(), Field.Store.YES));
 
             if (writer.getConfig().getOpenMode() == CREATE) {
                     writer.addDocument(doc);
@@ -85,26 +110,129 @@ public class Indexer {
             }
 	    }
 
-    public void constructBusinessMapping() throws IOException {
-            BufferedReader br = new BufferedReader(new FileReader("datasets/yelp_academic_dataset_business.csv"));
-            String line;
-            while ((line = br.readLine()) != null) {
-                    String[] fields = line.split("\t",2);
-                    businessMap.put(fields[0], fields[1]);
-            }
+    public void constructBusinessMapping(Path BusinessPath) throws IOException {
+
+        InputStream fis = new FileInputStream( BusinessPath.toString());
+        InputStreamReader isr = new InputStreamReader(fis, Charset.forName("UTF-8"));
+        BufferedReader br = new BufferedReader(isr);
+
+        long startTime = System.nanoTime();
+        String line = null;
+        int lineNum = 0;
+
+        while ((line = br.readLine()) != null) {
+            String output = "";
+
+            JSONObject business = new JSONObject(line);
+
+            String business_id = (String) business.get("business_id");
+            output = output + business_id + "\t";
+
+            String name = (String) business.get("name");
+            name = name.replace("\t", " ");
+            output = output + name + "\t";
+
+            String neighborhoods = business.get("neighborhoods").toString();
+            neighborhoods = neighborhoods.replace("\t", " ");
+            output = output + neighborhoods + "\t";
+
+            String address = (String) business.get("full_address");
+            address = address.replace("\n", " ");
+            address = address.replace("\r", " ");
+            address = address.replace("\t", " ");
+            output = output + address + "\t";
+
+            String city = (String) business.get("city");
+            output = output + city + "\t";
+
+            String state = (String) business.get("state");
+            output = output + state + "\t";
+
+            Double longitude = (Double) business.get("longitude");
+            output = output +  Double.toString(longitude) + "\t";
+
+            Double latitude = (Double) business.get("latitude");
+            output = output +  Double.toString(latitude) + "\t";
+
+            Double stars = (Double) business.get("stars");
+            output = output +  Double.toString(stars) + "\t";
+
+            Integer review_count = (Integer)business.get("review_count");
+            output = output +  Integer.toString(review_count) + "\t";
+
+            String categories = business.get("categories").toString();
+            output = output + categories + "\t";
+
+            Boolean isOpen = (Boolean) business.get("open");
+            output = output + Boolean.toString(isOpen) + "\t";
+
+            String hours = business.get("hours").toString();
+            output = output + hours + "\t";
+
+            String attributes = business.get("attributes").toString();
+            output = output + attributes;
+
+            lineNum++;
+
+            String[] fields = output.split("\t",2);
+            businessMap.put(fields[0], fields[1]);
+
+        }
+
+        long endTime = System.nanoTime();
+        double seconds = (endTime - startTime) / 1.0E09;
+        System.out.printf("Parsing *_business.csv with %d lines completed in %.2fs\n", lineNum, seconds);
+
+        fis.close();
+        isr.close();
+        br.close();
+
     }
 
-    public void constructReviewIndex() throws IOException, ParseException {
-        BufferedReader br = new BufferedReader(new FileReader("datasets/yelp_academic_dataset_review.csv"));
-        String line;
-        Review review;
+    public void constructReviewIndex(Path ReviewPath) throws IOException, ParseException {
+        InputStream fis = new FileInputStream( ReviewPath.toString());
+        InputStreamReader isr = new InputStreamReader(fis, Charset.forName("UTF-8"));
+        BufferedReader br = new BufferedReader(isr);
+        String line = null;
+        int lineNum = 0;
         String[] fields;
         String[] moreFields;
 
-        EnglishStemmer enstemmer = new EnglishStemmer();
+        long startTime = System.nanoTime();
 
         while ((line = br.readLine()) != null) {
-            fields = line.split("\t");
+            String output = "";
+
+            JSONObject review = new JSONObject(line);
+
+            String business_id = (String) review.get("business_id");
+            output = output + business_id + "\t";
+
+            String user_id = (String) review.get("user_id");
+            output = output + user_id + "\t";
+
+            String stars = review.get("stars").toString();
+            output = output + stars + "\t";
+
+            String text = (String) review.get("text");
+            text = text.replaceAll("\n", " ");
+            text = text.replaceAll(";", " ");
+            text = text.replaceAll("\r", " ");
+            text = text.replaceAll("\t", " ");
+            output = output + text + "\t";
+
+            String date = (String) review.get("date");
+            output = output + date + "\t";
+
+            JSONObject votes = review.getJSONObject("votes");
+            String voteFunny = votes.get("funny").toString();
+            String voteUseful = votes.get("useful").toString();
+            String voteCool = votes.get("cool").toString();
+
+            output = output + voteFunny + "\t" + voteUseful + "\t" + voteCool;
+            lineNum++;
+
+            fields = output.split("\t");
             String additional;
 
             additional = (String) businessMap.get(fields[0]);
@@ -113,53 +241,75 @@ public class Indexer {
                 continue;
             }
 
-            String business_id = fields[0] != null? fields[0]: null;
-            String user_id = fields[1] != null? fields[1]: null;
-            String stars = fields[2] != null? fields[2]: null;
-            String text = fields[3] != null? fields[3]: null;
+            String business_id_map = fields[0] != null? fields[0]: null;
+            String user_id_map = fields[1] != null? fields[1]: null;
+            String stars_map = fields[2] != null? fields[2]: null;
+            String text_map = fields[3] != null? fields[3]: null;
 
-            String[] words;
-            words = fields[3].split(" ");
-            for (int i = 0; i < words.length; i++) {
-                enstemmer.setCurrent(words[i]);
-                enstemmer.stem();
-                words[i] = enstemmer.getCurrent();
+            if ( choice == 4) {
+                EnglishStemmer enstemmer = new EnglishStemmer();
+                String[] words;
+                words = text_map.split(" ");
+                for (int i = 0; i < words.length; i++) {
+                    enstemmer.setCurrent(words[i]);
+                    enstemmer.stem();
+                    words[i] = enstemmer.getCurrent();
+                }
+                text_map = null;
+                for (int j = 0; j < words.length; j++){
+                    text_map = text_map + " " + words[j];
+                }
             }
-            fields[3] = null;
-            for (int j = 0; j < words.length; j++){
-                fields[3] = fields[3] + " " + words[j];
-            }
 
-
-            String date = fields[4] != null? fields[4]: null;
-            String voteFunny = fields[5] != null? fields[5]: null;
-            String voteUseful = fields[6] != null? fields[6]: null;
-            String voteCool = fields[7] != null? fields[7]: null;
+            String date_map = fields[4] != null? fields[4]: null;
+            String voteFunny_map = fields[5] != null? fields[5]: null;
+            String voteUseful_map = fields[6] != null? fields[6]: null;
+            String voteCool_map = fields[7] != null? fields[7]: null;
 
             moreFields = additional.split("\t");
             String businessName = moreFields[0] != null? moreFields[0]: null;
             String longitude = moreFields[5] != null? moreFields[5]: null;
             String latitude = moreFields[6] != null? moreFields[6]: null;
             String businessStars = moreFields[7] != null? moreFields[7]: null;
+            String fullAddress = moreFields[2] != null? moreFields[2]: null;
+            String city = moreFields[3] != null? moreFields[3]: null;
+            String state = moreFields[4] != null? moreFields[4]: null;
+            String neighborhoods = moreFields[1] != null? moreFields[1]: null;
+            String category = moreFields[9] != null? moreFields[9]: null;
 
-            review = new Review(business_id, user_id, stars,text, date, voteFunny, voteUseful, voteCool, businessName, longitude, latitude, businessStars);
-            indexReview(review);
-            count++;
+
+            Review inReview = new Review(business_id_map, user_id_map, stars_map,text_map, date_map,
+                    voteFunny_map, voteUseful_map, voteCool_map, businessName, longitude,
+                    latitude, businessStars, fullAddress, city, state, neighborhoods, category);
+            indexReview(inReview);
+
+
+
         }
+
+        long endTime = System.nanoTime();
+        double seconds = (endTime - startTime) / 1.0E09;
         System.out.println("Review list completed. Count: " + count);
+        System.out.printf("Converting *_review.csv with %d lines completed in %.2fs\n", lineNum, seconds);
+
+        fis.close();
+        isr.close();
+        br.close();
+
+
     }
 
-    public void rebuildIndexes() throws IOException, org.apache.lucene.queryparser.classic.ParseException, ParseException {
+    public void rebuildIndexes(Path BusinessPath, Path ReviewPath) throws IOException, org.apache.lucene.queryparser.classic.ParseException, ParseException {
 
         long startTime = System.nanoTime();
         getIndexWriter(true);
         System.out.println("Constructing business map..");
-        constructBusinessMapping();
+        constructBusinessMapping(BusinessPath);
 
         System.out.println("Indexing reviews...");
         long stepTime = System.nanoTime();
 
-        constructReviewIndex();
+        constructReviewIndex(ReviewPath);
         
         long endTime = System.nanoTime();
 
