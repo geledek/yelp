@@ -12,7 +12,12 @@ import org.apache.lucene.store.FSDirectory;
 import org.json.JSONObject;
 import org.tartarus.snowball.ext.EnglishStemmer;
 
-import java.io.*;
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.nio.charset.Charset;
 import java.nio.file.Path;
 import java.text.ParseException;
@@ -45,9 +50,12 @@ public class Indexer {
                         "\n 3. StandardAnalyzer" +
                         "\n 4. StemmerAnalyzer");
 
-                choice = Integer.parseInt(br.readLine());
-
-                Analyzer analyzer = null;
+                try {
+                    choice = Integer.parseInt(br.readLine());
+                } catch (NumberFormatException e){
+                    choice = 3;
+                }
+                Analyzer analyzer;
 
 
                 if ( choice == 1 ){
@@ -143,7 +151,7 @@ public class Indexer {
         BufferedReader br = new BufferedReader(isr);
 
         long startTime = System.nanoTime();
-        String line = null;
+        String line;
         int lineNum = 0;
 
         while ((line = br.readLine()) != null) {
@@ -213,7 +221,7 @@ public class Indexer {
                 if ( hour.has("Sunday"))Sunday = hour.get("Sunday").toString();
 
             }
-            String hours = business.get("hours").toString();
+
             output = output + Monday + "\t" + Tuesday + "\t" + Wednesday + "\t" + Thursday + "\t"
                      + Friday + "\t" + Saturday + "\t" + Sunday + "\t";
 
@@ -241,7 +249,7 @@ public class Indexer {
         InputStream fis = new FileInputStream( ReviewPath.toString());
         InputStreamReader isr = new InputStreamReader(fis, Charset.forName("UTF-8"));
         BufferedReader br = new BufferedReader(isr);
-        String line = null;
+        String line;
         int lineNum = 0;
         String[] fields;
         String[] moreFields;
@@ -304,8 +312,8 @@ public class Indexer {
                     words[i] = enstemmer.getCurrent();
                 }
                 text_map = null;
-                for (int j = 0; j < words.length; j++){
-                    text_map = text_map + " " + words[j];
+                for (String word : words) {
+                    text_map = text_map + " " + word;
                 }
             }
 

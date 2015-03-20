@@ -6,7 +6,6 @@ import org.apache.lucene.index.DirectoryReader;
 import org.apache.lucene.queryparser.classic.ParseException;
 import org.apache.lucene.queryparser.classic.QueryParser;
 import org.apache.lucene.search.*;
-import org.apache.lucene.search.highlight.*;
 import org.apache.lucene.store.FSDirectory;
 
 import java.io.BufferedReader;
@@ -25,23 +24,18 @@ public class SearchEngine {
     /**
      * Creates a new instance of SearchEngine
      */
-    public SearchEngine(String path) throws IOException, ParseException, InvalidTokenOffsetsException {
+    public SearchEngine(String path) throws IOException, ParseException {
+        indexPath = path;
+        searcher = new IndexSearcher(DirectoryReader.open(FSDirectory.open(new File(indexPath).toPath())));
 
-        try {
-            indexPath = path;
-            searcher = new IndexSearcher(DirectoryReader.open(FSDirectory.open(new File(indexPath).toPath())));
+        parser = new QueryParser("review", analyzer);
+        TopDocs topDocs = searchingMenu();
+        presentResult(topDocs);
 
-            parser = new QueryParser("review", analyzer);
-            TopDocs topDocs = searchingMenu();
-            presentResult(topDocs);
-        } catch (InvalidTokenOffsetsException e1) {
-            System.out.println("InvalidTokenOffsetsException: ");
-        }
     }
 
 
-    public TopDocs searchingMenu()
-            throws IOException, ParseException {
+    public TopDocs searchingMenu() throws IOException, ParseException {
         TopDocs topDocs = new TopDocs(0, null, 0);
         BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
         System.out.println("Please enter the searching type you prefer:" +
@@ -104,26 +98,13 @@ public class SearchEngine {
 
     }
 
-    public void presentResult(TopDocs topDocs)
-            throws IOException, InvalidTokenOffsetsException {
-        SimpleHTMLFormatter htmlFormatter = new SimpleHTMLFormatter();
-        Highlighter highlighter = new Highlighter(htmlFormatter, new QueryScorer(query));
-
+    public void presentResult(TopDocs topDocs) throws IOException {
 
         System.out.println("Results found: " + topDocs.totalHits);
         ScoreDoc[] hits = topDocs.scoreDocs;
         int i = 0;
         for (ScoreDoc hit : hits) {
             Document doc = getDocument(hit.doc);
-            String text = doc.get("review");
-            int id = hit.doc;
-            TokenStream tokenStream = TokenSources.getAnyTokenStream(searcher.getIndexReader(), id, "review", analyzer);
-            TextFragment[] frag = highlighter.getBestTextFragments(tokenStream, text, false, 10);
-            for (int j = 0; j < frag.length; j++) {
-                if ((frag[j] != null) && (frag[j].getScore() > 0))
-                    System.out.println(frag[j].toString());
-
-            }
             System.out.println("Rank: " + (++i) + "\t|score: " + hit.score + "\t|DocID: " + hit.doc
                     + "\t[[" + doc.get("businessName") + "]]"
                     + "\t|Business Stars: " + doc.get("businessStars")
