@@ -22,6 +22,8 @@ public class Main {
         indexer.rebuildIndexes(businessJSON.toPath(), reviewJSON.toPath());
 
         SearchEngine se = new SearchEngine(indexPath);
-        se.performSearch();
+        //se.performSearch();
+        se.performSearchTest("chinese food",20,3);
+        se.performSearchTest("food",20,2,-120,20,30,20);
     }
 }
