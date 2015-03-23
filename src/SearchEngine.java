@@ -63,14 +63,17 @@ public class SearchEngine {
         BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
         System.out.println("Please enter the keywords in the review");
         String kw = br.readLine();
-//        System.out.println(kw);
-        System.out.println("Which day do you prefer: 0.Any day, 1.Monday, 2.Tuesday, 3.Wednesday, " +
+        int choice = 0;
+        System.out.println("On which day would you prefer to go:\n 0.Any, 1.Monday, 2.Tuesday, 3.Wednesday, " +
                 "4.Thursday, 5.Friday, 6.Saturday, 7.Sunday");
         day = Integer.parseInt(br.readLine());
-//        System.out.println(day);
-        System.out.println("Do you prefer certain area? 1.Yes, 2.No");
-        int choice = Integer.parseInt(br.readLine());
-        System.out.println(choice);
+        System.out.println("Do you prefer certain area? (default no) 1.Yes, 2.No");
+        try {
+            choice = Integer.parseInt(br.readLine());
+        } catch (NumberFormatException e){
+            choice = 2;
+        }
+
         double longitude = 0;
         double longitudeLength = 0;
         double latitude = 0;
@@ -81,26 +84,21 @@ public class SearchEngine {
             case 1:
                 System.out.println("Please enter the longitude coordinate (-180~180)");
                 longitude = Double.parseDouble(br.readLine());
-                System.out.println(longitude);
                 System.out.println("Please enter the length extends along the east direction");
                 longitudeLength = Double.parseDouble(br.readLine());
-                System.out.println(longitudeLength);
                 System.out.println("Please enter the latitude coordinate (-90~90)");
                 latitude = Double.parseDouble(br.readLine());
-                System.out.println(latitude);
                 System.out.println("Please enter the length extends along the north direction");
                 latitudeLength = Double.parseDouble(br.readLine());
-                System.out.println(latitudeLength);
 
                 System.out.println("Please enter the number of results you prefer");
 
                 try {
                     num = Integer.parseInt(br.readLine());
-                    System.out.println(num);
                 } catch (NumberFormatException e) {
-                    num = 3;
-                    System.out.println(num);
+                    num = 10;
                 }
+
             case 2:
                 query = keywordQuery(kw);
                 topDocs = searcher.search(query, num);
