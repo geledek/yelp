@@ -15,8 +15,8 @@ public class Main {
 
         String dir = args[0];
         String indexPath = "index";
-        File businessJSON = new File(dir + "yelp_academic_dataset_business.json");
-        File reviewJSON = new File(dir + "yelp_academic_dataset_review.json");
+        File businessJSON = new File(dir + "/yelp_academic_dataset_business.json");
+        File reviewJSON = new File(dir + "/yelp_academic_dataset_review.json");
 
         Indexer indexer = new Indexer(indexPath);
         indexer.rebuildIndexes(businessJSON.toPath(), reviewJSON.toPath());
