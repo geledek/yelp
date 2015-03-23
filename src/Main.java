@@ -19,11 +19,13 @@ public class Main {
         File reviewJSON = new File(dir + "/yelp_academic_dataset_review.json");
 
         Indexer indexer = new Indexer(indexPath);
-        indexer.rebuildIndexes(businessJSON.toPath(), reviewJSON.toPath());
+//        indexer.rebuildIndexes(businessJSON.toPath(), reviewJSON.toPath());
 
         SearchEngine se = new SearchEngine(indexPath);
-        //se.performSearch();
-        se.performSearchTest("chinese food",20,3);
-        se.performSearchTest("food",20,2,-120,20,30,20);
+        while(true) {
+            se.performSearch();
+        }
+//        se.performSearchTest("chinese food",20,3);
+//        se.performSearchTest("food",20,2,-120,20,30,20);
     }
 }

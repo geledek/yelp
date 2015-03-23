@@ -36,6 +36,16 @@ public class SearchEngine {
         TopDocs topDocs = searchingMenu();
         presentResult(topDocs);
     }
+
+    public void performSearchTest(String kw, int num, int inputDay) throws IOException, ParseException {
+        searcher = new IndexSearcher(DirectoryReader.open(FSDirectory.open(new File(indexPath).toPath())));
+        parser = new QueryParser("review", analyzer);
+        day = inputDay;
+        query = keywordQuery(kw);
+        TopDocs topDocs = searcher.search(query, num);
+        presentResult(topDocs);
+    }
+
     public void performSearchTest(String kw, int num, int inputDay, double longitude, double longitudeLength,
                                   double latitude, double latitudeLength) throws IOException, ParseException {
         searcher = new IndexSearcher(DirectoryReader.open(FSDirectory.open(new File(indexPath).toPath())));
@@ -46,14 +56,6 @@ public class SearchEngine {
         combine.add(longitudeQuery(longitude, longitudeLength), BooleanClause.Occur.MUST);
         combine.add(latitudeQuery(latitude, latitudeLength), BooleanClause.Occur.MUST);
         query = combine;
-        TopDocs topDocs = searcher.search(query, num);
-        presentResult(topDocs);
-    }
-    public void performSearchTest(String kw, int num, int inputDay) throws IOException, ParseException {
-        searcher = new IndexSearcher(DirectoryReader.open(FSDirectory.open(new File(indexPath).toPath())));
-        parser = new QueryParser("review", analyzer);
-        day = inputDay;
-        query = keywordQuery(kw);
         TopDocs topDocs = searcher.search(query, num);
         presentResult(topDocs);
     }
@@ -91,26 +93,22 @@ public class SearchEngine {
                 System.out.println("Please enter the length extends along the north direction");
                 latitudeLength = Double.parseDouble(br.readLine());
 
-                System.out.println("Please enter the number of results you prefer");
-
-                try {
-                    num = Integer.parseInt(br.readLine());
-                } catch (NumberFormatException e) {
-                    num = 10;
-                }
-
-            case 2:
-                query = keywordQuery(kw);
-                topDocs = searcher.search(query, num);
-            default:
                 BooleanQuery combine = new BooleanQuery();
                 combine.add(keywordQuery(kw), BooleanClause.Occur.MUST);
                 combine.add(longitudeQuery(longitude, longitudeLength), BooleanClause.Occur.MUST);
                 combine.add(latitudeQuery(latitude, latitudeLength), BooleanClause.Occur.MUST);
                 query = combine;
-                topDocs = searcher.search(query, num);
+            case 2:
+                query = keywordQuery(kw);
         }
-        return topDocs;
+
+        System.out.println("Please enter the number of results you prefer");
+        try {
+            num = Integer.parseInt(br.readLine());
+        } catch (NumberFormatException e) {
+            num = 10;
+        }
+        return searcher.search(query, num);
     }
 
     public Query keywordQuery(String queryString)
