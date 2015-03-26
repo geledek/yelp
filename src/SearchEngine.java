@@ -43,6 +43,7 @@ public class SearchEngine {
         day = inputDay;
         query = keywordQuery(kw);
         TopDocs topDocs = searcher.search(query, num);
+        System.out.println("\"" + kw + "\"");
         presentResult(topDocs);
     }
 
@@ -98,8 +99,10 @@ public class SearchEngine {
                 combine.add(longitudeQuery(longitude, longitudeLength), BooleanClause.Occur.MUST);
                 combine.add(latitudeQuery(latitude, latitudeLength), BooleanClause.Occur.MUST);
                 query = combine;
+                break;
             case 2:
                 query = keywordQuery(kw);
+                break;
         }
 
         System.out.println("Please enter the number of results you prefer");
