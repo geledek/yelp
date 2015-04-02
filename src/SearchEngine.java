@@ -2,6 +2,7 @@ import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.analysis.standard.StandardAnalyzer;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.index.DirectoryReader;
+import org.apache.lucene.queryparser.classic.MultiFieldQueryParser;
 import org.apache.lucene.queryparser.classic.ParseException;
 import org.apache.lucene.queryparser.classic.QueryParser;
 import org.apache.lucene.search.*;
@@ -11,6 +12,8 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.util.HashMap;
+import java.util.Map;
 
 
 public class SearchEngine {
@@ -22,6 +25,11 @@ public class SearchEngine {
 
     private int day;
 
+
+    private MultiFieldQueryParser multiParser = null;
+    //private Map boostmap = new HashMap <String, Float> ();
+
+
     /**
      * Creates a new instance of SearchEngine
      */
@@ -32,7 +40,11 @@ public class SearchEngine {
 
     public void performSearch() throws IOException, ParseException {
         searcher = new IndexSearcher(DirectoryReader.open(FSDirectory.open(new File(indexPath).toPath())));
-        parser = new QueryParser("review", analyzer);
+        //parser = new QueryParser("review", analyzer);
+
+        multiParser = new MultiFieldQueryParser(new String[]{"review", "businessname", "category"},analyzer);
+
+
         TopDocs topDocs = searchingMenu();
         presentResult(topDocs);
     }
@@ -116,7 +128,7 @@ public class SearchEngine {
 
     public Query keywordQuery(String queryString)
             throws IOException, ParseException {
-        Query keywordQuery = parser.parse(queryString);
+        Query keywordQuery = multiParser.parse(queryString);
         return keywordQuery;
     }
 
@@ -143,7 +155,7 @@ public class SearchEngine {
         for (ScoreDoc hit : hits) {
             Document doc = getDocument(hit.doc);
             System.out.println("Rank: " + (++i) + "\t|score: " + hit.score + "\t|DocID: " + hit.doc
-                    + "\t[[" + doc.get("businessName") + "]]"
+                    + "\t|BusinessName: [[" + doc.get("businessName") + "]]"
                     + "\t|Business Stars: " + doc.get("businessStars")
                     + "\t|Review Stars: " + doc.get("reviewStars")
                     + "\t|(" + doc.get("longitude") + ", " + doc.get("latitude")

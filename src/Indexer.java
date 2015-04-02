@@ -135,6 +135,10 @@ public class Indexer {
             doc.add(new StringField("Saturday", review.getSaturday(), Field.Store.YES));
             doc.add(new StringField("Sunday", review.getSunday(), Field.Store.YES));
 
+            String BR = review.getBusinessName()+ "" + review.getCategory() + "" + review.getFullAddress()
+                    + "" + review.getText() ;
+            doc.add(new StringField("BR", BR, Field.Store.NO));
+
             if (writer.getConfig().getOpenMode() == CREATE) {
                     writer.addDocument(doc);
             } else {
