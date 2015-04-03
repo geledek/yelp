@@ -111,14 +111,22 @@ public class Indexer {
             newType.setOmitNorms(false);
 
             /*TODO: FIGURE OUT HOW TO BOOST*/
-            Field stars = new Field("reviewStars", review.getStars(), newType);
-            doc.add(stars);
-//            stars.setBoost(((Float.valueOf(review.getStars()) - 3.0F)*10.0F));
+            Field reviewStars = new Field("reviewStars", review.getStars(), newType);
+            doc.add(reviewStars);
+            reviewStars.setBoost(3.0F);
+
 
             doc.add(new TextField("review", review.getText(), Field.Store.YES));
 	        doc.add(new StringField("date", review.getDate(), Field.Store.YES));
+//            Field reviewStars = new DoubleField("reviewStars", Double.valueOf(review.getStars()), Field.Store.YES);
+//            doc.add(reviewStars );
 
-            doc.add(new StringField("businessName", review.getBusinessName(), Field.Store.YES));
+
+            Field businessName = new Field("businessName", review.getBusinessName(), newType);
+            doc.add(businessName);
+            reviewStars.setBoost(3.0F);
+
+//            doc.add(new StringField("businessName", review.getBusinessName(), Field.Store.YES));
             doc.add(new DoubleField("longitude", Double.valueOf(review.getLongitude()), Field.Store.YES));
             doc.add(new DoubleField("latitude", Double.valueOf(review.getLatitude()), Field.Store.YES));
             doc.add(new DoubleField("businessStars", Double.valueOf(review.getBusinessStars()), Field.Store.YES));
@@ -138,6 +146,8 @@ public class Indexer {
             String BR = review.getBusinessName()+ "" + review.getCategory() + "" + review.getFullAddress()
                     + "" + review.getText() ;
             doc.add(new StringField("BR", BR, Field.Store.NO));
+
+
 
             if (writer.getConfig().getOpenMode() == CREATE) {
                     writer.addDocument(doc);

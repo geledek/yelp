@@ -27,7 +27,7 @@ public class SearchEngine {
 
 
     private MultiFieldQueryParser multiParser = null;
-    //private Map boostmap = new HashMap <String, Float> ();
+    Map<String, Float> boostmap = new HashMap <String, Float> ();
 
 
     /**
@@ -42,7 +42,12 @@ public class SearchEngine {
         searcher = new IndexSearcher(DirectoryReader.open(FSDirectory.open(new File(indexPath).toPath())));
         //parser = new QueryParser("review", analyzer);
 
+
+        boostmap.put("businessname", 5.0F);
+        boostmap.put("review", 5.0F);
+        multiParser.setFuzzyMinSim( 10.0F);
         multiParser = new MultiFieldQueryParser(new String[]{"review", "businessname", "category"},analyzer);
+
 
 
         TopDocs topDocs = searchingMenu();
@@ -51,7 +56,13 @@ public class SearchEngine {
 
     public void performSearchTest(String kw, int num, int inputDay) throws IOException, ParseException {
         searcher = new IndexSearcher(DirectoryReader.open(FSDirectory.open(new File(indexPath).toPath())));
-        parser = new QueryParser("review", analyzer);
+        //parser = new QueryParser("review", analyzer);
+        String key = "businessname";
+        Float value = 5.0F;
+        boostmap.put(key, value);
+        boostmap.put("review", 5.0F);
+        multiParser = new MultiFieldQueryParser(new String[]{"review", "businessname", "category"},analyzer, boostmap);
+
         day = inputDay;
         query = keywordQuery(kw);
         TopDocs topDocs = searcher.search(query, num);
