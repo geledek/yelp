@@ -42,25 +42,16 @@ public class SearchEngine {
 
     public void performSearch() throws IOException, ParseException {
         searcher = new IndexSearcher(DirectoryReader.open(FSDirectory.open(new File(indexPath).toPath())));
-        //parser = new QueryParser("review", analyzer);
-
-
-        boostmap.put("businessname", 5.0F);
-        boostmap.put("review", 5.0F);
-        multiParser.setFuzzyMinSim( 10.0F);
         multiParser = new MultiFieldQueryParser(new String[]{"review", "businessname", "category"},analyzer);
 
         TopDocs topDocs = searchingMenu();
+        System.out.println( "Length: \t" + topDocs.scoreDocs.length);
         presentResult(topDocs);
     }
 
     public void performSearchTest(String kw, int num, int inputDay) throws IOException, ParseException {
         searcher = new IndexSearcher(DirectoryReader.open(FSDirectory.open(new File(indexPath).toPath())));
-        //parser = new QueryParser("review", analyzer);
-
-        boostmap.put("businessname", 5.0F);
-        boostmap.put("review", 5.0F);
-        multiParser = new MultiFieldQueryParser(new String[]{"review", "businessname", "category"},analyzer, boostmap);
+        multiParser = new MultiFieldQueryParser(new String[]{"review", "businessname", "category"},analyzer);
 
         day = inputDay;
         query = keywordQuery(kw);
@@ -72,9 +63,6 @@ public class SearchEngine {
     public void performSearchTest(String kw, int num, int inputDay, double longitude, double longitudeLength,
                                   double latitude, double latitudeLength) throws IOException, ParseException {
         searcher = new IndexSearcher(DirectoryReader.open(FSDirectory.open(new File(indexPath).toPath())));
-        //parser = new QueryParser("review", analyzer);
-        boostmap.put("businessname", 5.0F);
-        boostmap.put("review", 5.0F);
         multiParser = new MultiFieldQueryParser(new String[]{"review", "businessname", "category"},analyzer);
         day = inputDay;
         BooleanQuery combine = new BooleanQuery();
@@ -93,8 +81,13 @@ public class SearchEngine {
         String kw = br.readLine();
         int choice = 0;
         System.out.println("On which day would you prefer to go:\n 0.Any, 1.Monday, 2.Tuesday, 3.Wednesday, " +
-                "4.Thursday, 5.Friday, 6.Saturday, 7.Sunday");
-        day = Integer.parseInt(br.readLine());
+                "4.Thursday, 5.Friday, 6.Saturday, 7.Sunday  (default 0)");
+        try {
+            day = Integer.parseInt(br.readLine());
+        }  catch (NumberFormatException e){
+            day = 0;
+        }
+
         System.out.println("Do you prefer certain area? (default no) 1.Yes, 2.No");
         try {
             choice = Integer.parseInt(br.readLine());
@@ -130,9 +123,10 @@ public class SearchEngine {
                 break;
         }
 
-        System.out.println("Please enter the number of results you prefer");
+        System.out.println("Please enter the number of results you prefer (default 10)");
         try {
             num = Integer.parseInt(br.readLine());
+            System.out.println(num);
         } catch (NumberFormatException e) {
             num = 10;
         }
@@ -171,6 +165,7 @@ public class SearchEngine {
         int num = 0;
         int i = 0;
         for (ScoreDoc hit : hits) {
+            i++;
             if (num == 0){
                 hitCopy[num] = hit;
                 doc[num] = getDocument(hit.doc);
@@ -180,6 +175,12 @@ public class SearchEngine {
                     hitCopy[num] = hit;
                     doc[num] = getDocument(hit.doc);
                     num++;
+                    if ( i == hits.length){
+                        for (int j = 0; j < num; j++) {
+                            presentNum ++;
+                            outcome(presentNum, hitCopy[j], doc[j]);
+                        }
+                    }
                 }else{
                     if (num == 1){
                         presentNum ++;
@@ -196,10 +197,12 @@ public class SearchEngine {
                     doc[num] = getDocument(hit.doc);
                     num++;
                     if ( (presentNum+1) == hits.length){
-                        presentNum++;
+                        presentNum ++;
                         outcome(presentNum, hitCopy[0], doc[0]);
                     }
+
                 }
+
             }
         }
 
