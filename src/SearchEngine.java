@@ -29,6 +29,8 @@ public class SearchEngine {
     private MultiFieldQueryParser multiParser = null;
     Map<String, Float> boostmap = new HashMap <String, Float> ();
 
+    SortField sortField = new SortField("reviewStars", SortField.Type.DOUBLE);
+    Sort sort = new Sort(sortField);
 
     /**
      * Creates a new instance of SearchEngine
@@ -48,8 +50,6 @@ public class SearchEngine {
         multiParser.setFuzzyMinSim( 10.0F);
         multiParser = new MultiFieldQueryParser(new String[]{"review", "businessname", "category"},analyzer);
 
-
-
         TopDocs topDocs = searchingMenu();
         presentResult(topDocs);
     }
@@ -57,9 +57,8 @@ public class SearchEngine {
     public void performSearchTest(String kw, int num, int inputDay) throws IOException, ParseException {
         searcher = new IndexSearcher(DirectoryReader.open(FSDirectory.open(new File(indexPath).toPath())));
         //parser = new QueryParser("review", analyzer);
-        String key = "businessname";
-        Float value = 5.0F;
-        boostmap.put(key, value);
+
+        boostmap.put("businessname", 5.0F);
         boostmap.put("review", 5.0F);
         multiParser = new MultiFieldQueryParser(new String[]{"review", "businessname", "category"},analyzer, boostmap);
 
@@ -73,7 +72,10 @@ public class SearchEngine {
     public void performSearchTest(String kw, int num, int inputDay, double longitude, double longitudeLength,
                                   double latitude, double latitudeLength) throws IOException, ParseException {
         searcher = new IndexSearcher(DirectoryReader.open(FSDirectory.open(new File(indexPath).toPath())));
-        parser = new QueryParser("review", analyzer);
+        //parser = new QueryParser("review", analyzer);
+        boostmap.put("businessname", 5.0F);
+        boostmap.put("review", 5.0F);
+        multiParser = new MultiFieldQueryParser(new String[]{"review", "businessname", "category"},analyzer);
         day = inputDay;
         BooleanQuery combine = new BooleanQuery();
         combine.add(keywordQuery(kw), BooleanClause.Occur.MUST);
@@ -162,47 +164,115 @@ public class SearchEngine {
 
         System.out.println("Results found: " + topDocs.totalHits);
         ScoreDoc[] hits = topDocs.scoreDocs;
+        ScoreDoc[] hitCopy = new ScoreDoc[20];
+        Document[] doc = new Document[20];
+
+        int presentNum = 0;
+        int num = 0;
         int i = 0;
         for (ScoreDoc hit : hits) {
-            Document doc = getDocument(hit.doc);
-            System.out.println("Rank: " + (++i) + "\t|score: " + hit.score + "\t|DocID: " + hit.doc
-                    + "\t|BusinessName: [[" + doc.get("businessName") + "]]"
-                    + "\t|Business Stars: " + doc.get("businessStars")
-                    + "\t|Review Stars: " + doc.get("reviewStars")
-                    + "\t|(" + doc.get("longitude") + ", " + doc.get("latitude")
-                    + ")\n\t\t|Review: " + doc.get("review"));
-            presentDayInResult(doc, day);
+            if (num == 0){
+                hitCopy[num] = hit;
+                doc[num] = getDocument(hit.doc);
+                num++;
+            }else{
+                if ( Math.abs(hitCopy[num-1].score - hit.score)<0.000000001){
+                    hitCopy[num] = hit;
+                    doc[num] = getDocument(hit.doc);
+                    num++;
+                }else{
+                    if (num == 1){
+                        presentNum ++;
+                        outcome(presentNum, hitCopy[0], doc[0]);
+                    }else {
+                        sortDoc(hitCopy, doc, num);
+                        for (int j = 0; j < num; j++) {
+                            presentNum ++;
+                            outcome(presentNum, hitCopy[j], doc[j]);
+                        }
+                    }
+                    num = 0;
+                    hitCopy[num] = hit;
+                    doc[num] = getDocument(hit.doc);
+                    num++;
+                    if ( (presentNum+1) == hits.length){
+                        presentNum++;
+                        outcome(presentNum, hitCopy[0], doc[0]);
+                    }
+                }
+            }
+        }
+
+        System.out.println("Top score: " + topDocs.getMaxScore());
+
+    }
+
+    public void outcome(int rank, ScoreDoc hitCopy, Document doc ){
+        System.out.println("Rank: " + rank + "\t|score: " + hitCopy.score + "\t|DocID: " + hitCopy.doc
+                + "\n\t\tBusiness Name: [[" + doc.get("businessName") + "]]"
+                + "\n\t\tBusiness Stars: " + doc.get("businessStars")
+                + "\t\tReview Stars: " + doc.get("reviewStars")
+                + "\n\t\tAddress: " + doc.get("fullAddress")
+                + "\n\t\tCoordinates: " + doc.get("longitude") + ", " + doc.get("latitude")
+                + "\n\t\tReview: " + doc.get("review"));
+        presentDayInResult(doc, day);
+    }
+
+    public void sortDoc(ScoreDoc[] hitCopy, Document[] doc, int len){
+        int j;
+        boolean flag = true;
+        while ( flag )
+        {
+            flag= false;
+            for( j=0;  j < len -1;  j++ )
+            {
+                Double com1 = Double.parseDouble(doc[j].get("businessStars"));
+                Double com2 = Double.parseDouble(doc[j+1].get("businessStars"));
+                int comR = com1.compareTo(com2);
+                if ( comR <0 )   // change to > for ascending sort
+                {
+                    ScoreDoc temphit = hitCopy[j];
+                    hitCopy[j] = hitCopy[j+1];
+                    hitCopy[j+1] = temphit;
+
+                    Document tempDoc = doc[j];
+                    doc[j] = doc[j+1];
+                    doc[j+1] = tempDoc;
+
+                    flag = true;
+                }
+            }
         }
     }
 
     public void presentDayInResult(Document doc, int day) {
         switch (day) {
             case 0:
-                System.out.println("\t\t|Monday: " + doc.get("monday") + "\tTuesday: " + doc.get("tuesday")
+                System.out.println("\t\tOpening: Monday: " + doc.get("monday") + "\tTuesday: " + doc.get("tuesday")
                         + "\tWednesday: " + doc.get("wednesday") + "\tThursday: " + doc.get("thursday")
                         + "\tFriday: " + doc.get("friday") + "\tSaturday: " + doc.get("saturday")
                         + "\tSunday: " + doc.get("sunday"));
                 break;
             case 1:
-                System.out.println("\t\t|Monday: " + doc.get("monday"));
+                System.out.println("\t\tOpening: Monday: " + doc.get("monday"));
                 break;
             case 2:
-                System.out.println("\t\t|Tuesday: " + doc.get("tuesday"));
+                System.out.println("\t\tOpening: Tuesday: " + doc.get("tuesday"));
                 break;
             case 3:
-                System.out.println("\t\t|Wednesday: " + doc.get("wednesday"));
+                System.out.println("\t\tOpening: Wednesday: " + doc.get("wednesday"));
                 break;
             case 4:
-                System.out.println("\t\t|Thursday: " + doc.get("thursday"));
+                System.out.println("\t\tOpening: Thursday: " + doc.get("thursday"));
                 break;
             case 5:
-                System.out.println("\t\t|Friday: " + doc.get("friday"));
+                System.out.println("\t\tOpening: Friday: " + doc.get("friday"));
                 break;
             case 6:
-                System.out.println("\t\t|Saturday: " + doc.get("saturday"));
+                System.out.println("\t\tOpening: Saturday: " + doc.get("saturday"));
                 break;
             case 7:
-                System.out.println("\t\t|Sunday: " + doc.get("sunday"));
+                System.out.println("\t\tOpening: Sunday: " + doc.get("sunday"));
                 break;
 
         }

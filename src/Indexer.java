@@ -111,22 +111,25 @@ public class Indexer {
             newType.setOmitNorms(false);
 
             /*TODO: FIGURE OUT HOW TO BOOST*/
-            Field reviewStars = new Field("reviewStars", review.getStars(), newType);
-            doc.add(reviewStars);
-            reviewStars.setBoost(3.0F);
+//            Field reviewStars = new Field("reviewStars", review.getStars(), newType);
+//            doc.add(reviewStars);
+//            reviewStars.setBoost(3.0F);
 
 
+
+            doc.add(new DoubleField("reviewStars", Double.valueOf(review.getStars()), Field.Store.YES));
             doc.add(new TextField("review", review.getText(), Field.Store.YES));
 	        doc.add(new StringField("date", review.getDate(), Field.Store.YES));
 //            Field reviewStars = new DoubleField("reviewStars", Double.valueOf(review.getStars()), Field.Store.YES);
 //            doc.add(reviewStars );
 
 
-            Field businessName = new Field("businessName", review.getBusinessName(), newType);
-            doc.add(businessName);
-            reviewStars.setBoost(3.0F);
+//            Field businessName = new Field("businessName", review.getBusinessName(), newType);
+//            doc.add(businessName);
+//            reviewStars.setBoost(3.0F);
 
-//            doc.add(new StringField("businessName", review.getBusinessName(), Field.Store.YES));
+//            doc.add(new DoubleDocValuesField("reviewStars", Double.valueOf(review.getStars())));
+            doc.add(new StringField("businessName", review.getBusinessName(), Field.Store.YES));
             doc.add(new DoubleField("longitude", Double.valueOf(review.getLongitude()), Field.Store.YES));
             doc.add(new DoubleField("latitude", Double.valueOf(review.getLatitude()), Field.Store.YES));
             doc.add(new DoubleField("businessStars", Double.valueOf(review.getBusinessStars()), Field.Store.YES));
@@ -369,7 +372,7 @@ public class Indexer {
 
         long endTime = System.nanoTime();
         double seconds = (endTime - startTime) / 1.0E09;
-        System.out.println("Review list completed. Count: " + count);
+//        System.out.println("Review list completed. Count: " + count);
         System.out.printf("Converting *_review.csv with %d lines completed in %.2fs\n", lineNum, seconds);
 
         fis.close();
@@ -396,7 +399,7 @@ public class Indexer {
         double seconds_1 = (stepTime - startTime) / 1.0E09;
         double seconds_2 = (endTime - stepTime) / 1.0E09;
         System.out.println("Indexing done.");
-        System.out.printf("%d reviews added in %.2fs\n", count, seconds_1);
+//        System.out.printf("%d reviews added in %.2fs\n", count, seconds_1);
         System.out.printf("%d entries indexed in %.2fs\n", indexWriter.numDocs(), seconds_2);
         closeIndexWriter();
     }
